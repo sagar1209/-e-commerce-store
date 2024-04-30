@@ -1,8 +1,11 @@
+const Admin = require('../../models/admin');
 
 
 const allverifiedProduct = async(req,res)=>{
      try {
-        res.send("get all verified product");
+        console.log(req.id)
+        const admin = await Admin.findOne({_id : req.id});
+        res.json({admin})
      } catch (error) {
         console.log(error)
      }
@@ -24,19 +27,19 @@ const unverifiedProductToVerify =  async(req,res)=>{
     }
 }
 
-const unverifiedProductToDelete = async(req,res)=>{
+const productToDelete = async(req,res)=>{
     try {
-        res.send("unverified product has removed");
+        res.send("product has removed")
     } catch (error) {
         console.log(error)
     }
 }
 
-const verifiedProductToDelete = async(req,res)=>{
+const getProduct = async(req,res)=>{
     try {
-        res.send("verified product has removed")
+        res.send("get Product");
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }
 
@@ -44,6 +47,6 @@ module.exports = {
     allverifiedProduct,
     allunVerifiedProduct,
     unverifiedProductToVerify,
-    unverifiedProductToDelete,
-    verifiedProductToDelete,
+    productToDelete,
+    getProduct,
 }

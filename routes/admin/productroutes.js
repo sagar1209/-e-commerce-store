@@ -3,13 +3,14 @@ const {
   allverifiedProduct,
   allunVerifiedProduct,
   unverifiedProductToVerify,
-  unverifiedProductToDelete,
-  verifiedProductToDelete
+  productToDelete,
+  getProduct,
 } = require("../../controller/admin/productController");
-
+const { verifyToken } = require("../../config/auth");
+require('dotenv').config();
+const SECRET_KEY = process.env.ADMIN_JWT;
 
 const router = express.Router({ caseSensitive: true });
-
 
 router.get("/", (req, res) => {
   res.send({
@@ -17,10 +18,10 @@ router.get("/", (req, res) => {
   });
 });
 
-router.get('/allverifiedproduct',allverifiedProduct);
-router.get('/allunverifiedproduct',allunVerifiedProduct);
-router.post('/verifyproduct',unverifiedProductToVerify);
-router.delete('/unverifiedproducttodelete',unverifiedProductToDelete);
-router.delete('/verifiedproducttodelete',verifiedProductToDelete);
+router.get("/allverifiedproduct",(req,res,next) => verifyToken(req,res,next,SECRET_KEY),allverifiedProduct);
+router.get("/allunverifiedproduct", allunVerifiedProduct);
+router.post("/verifyproduct/:id", unverifiedProductToVerify);
+router.delete("/:id", productToDelete);
+router.get("/:id", getProduct);
 
 module.exports = router;

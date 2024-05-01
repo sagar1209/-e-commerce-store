@@ -1,10 +1,14 @@
+const User = require('../../models/user')
+
 
 const getAllProduct = async(req,res)=>{
     try {
-        res.send("all Product");
-    } catch (error) {
-        console.log(error);
-    }
+        console.log(req.id)
+        const user = await User.findOne({_id : req.id});
+        res.json({user})
+     } catch (error) {
+        console.log(error)
+     }
 }
 
 const addProduct = async(req,res)=>{

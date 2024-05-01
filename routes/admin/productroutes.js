@@ -7,8 +7,8 @@ const {
   getProduct,
 } = require("../../controller/admin/productController");
 const { verifyToken } = require("../../config/auth");
-require('dotenv').config();
 const SECRET_KEY = process.env.ADMIN_JWT;
+require('dotenv').config();
 
 const router = express.Router({ caseSensitive: true });
 

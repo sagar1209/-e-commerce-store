@@ -1,5 +1,6 @@
 const Admin = require("../../models/admin");
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require("uuid");
 const {
   generateHasePassword,
   verifyPassword,
@@ -44,8 +45,11 @@ const login = async (req, res) => {
     if (!match) {
       throw new Error("Incorrect password");
     }
-
-    const token = await generateToken({ id: admin._id }, process.env.ADMIN_JWT);
+    const uniqueID = uuidv4();
+    const token = await generateToken(
+      { id: admin._id, uniqueID },
+      process.env.ADMIN_JWT
+    );
     res.status(200).json({ token });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -54,9 +58,9 @@ const login = async (req, res) => {
 
 const logOut = async (req, res) => {
   try {
-    res.send("log-out admin");
+    res.status(200).json({ message: "Admin Successfully logOut" });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

@@ -8,6 +8,8 @@ const {
   getProduct,
   addProduct
 } = require("../../controller/user/productController");
+const { verifyToken } = require("../../config/auth");
+const SECRET_KEY = process.env.USER_JWT;
 
 const router = express.Router({ caseSensitive: true });
 
@@ -17,7 +19,7 @@ router.get("/", (req, res) => {
   });
 });
 
-router.get('/allproduct',getAllProduct);
+router.get('/allproduct',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),getAllProduct);
 router.get('/:id',getProduct);
 router.get('/allownverifiedproduct',getAllOwnVerifiedProduct);
 router.get('/allownunverifiedproduct',getAllOwnUnverifiedProduct);

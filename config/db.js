@@ -1,6 +1,5 @@
 
 const mongoose = require('mongoose');
-require('dotenv').config();
 
 const mongoDb = async function(){
     try {

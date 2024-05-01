@@ -20,11 +20,11 @@ router.get("/", (req, res) => {
 });
 
 router.get('/allproduct',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),getAllProduct);
-router.get('/:id',getProduct);
-router.get('/allownverifiedproduct',getAllOwnVerifiedProduct);
-router.get('/allownunverifiedproduct',getAllOwnUnverifiedProduct);
-router.post('/',addProduct);
-router.patch('/:id',updateProduct);
-router.delete('/:id',removeProduct);
+router.post('/',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),addProduct);
+router.delete('/:id',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),removeProduct);
+router.get('/allownverifiedproduct',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),getAllOwnVerifiedProduct);
+router.get('/allownunverifiedproduct',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),getAllOwnUnverifiedProduct);
+router.get('/:id',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),getProduct);
+router.patch('/:id',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),updateProduct);
 
 module.exports = router;

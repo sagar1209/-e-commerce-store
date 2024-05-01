@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
-const ProductShema = mongoose.Schema({
+const ProductSchema = mongoose.Schema({
+    owner: {
+        type: mongoose.Schema.Types.ObjectId, // Assuming owner is represented by ObjectId
+        ref: 'User', // Reference to the User model
+        required: true
+    },
      name : {
         type : String,
         required : true,
@@ -26,12 +31,22 @@ const ProductShema = mongoose.Schema({
     },
     imageUrl: {
         type: String,
+        required : true,
     },
+    isVerify :{
+        type : Boolean,
+        default : false,
+    }
 },{
-    timeStamp : true,
+    timestamps: true
 })
 
-const Product = mongoose.model('Product',ProductShema);
+ProductSchema.pre('save', function(next) {
+    this.isVerify = false;
+    next();
+});
+
+const Product = mongoose.model('Product',ProductSchema);
 
 module.exports = Product;
 

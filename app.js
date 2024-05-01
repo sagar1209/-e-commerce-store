@@ -5,9 +5,9 @@ const adminRoutes = require('./routes/admin/admin');
 const userRoutes = require('./routes/user/user');
 
 const app = express();
-
 mongoDb();
-const PORT = 3000;
+
+const PORT = process.env.PORT || 3002;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -3,9 +3,14 @@ const mongoose = require("mongoose");
 
 const getProductsWithQuery = async (req, res, query) => {
   try {
+    // search functionality add
+     const  {category} = req.query;
+     if (category) {
+      query.category = { $regex: new RegExp(category, 'i') };
+    }
     const products = await Product.find(query).populate('owner');
     const newProducts = products.map(product => ({
-      _id: product._id,
+      _id : product._id,
       owner: product.owner.username,
       name: product.name,
       category: product.category,
@@ -20,6 +25,11 @@ const getProductsWithQuery = async (req, res, query) => {
 };
 
 const getAllProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: true,owner :{$ne: req.id}})
+
+const getAllOwnVerifiedProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: true, owner: req.id});
+
+const getAllOwnUnverifiedProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: false, owner: req.id});
+
 
 const addProduct = async (req, res) => {
   try {
@@ -96,10 +106,6 @@ const updateProduct = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-const getAllOwnVerifiedProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: true, owner: req.id});
-
-const getAllOwnUnverifiedProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: false, owner: req.id});
 
 const getProduct = async (req, res) => {
   try {

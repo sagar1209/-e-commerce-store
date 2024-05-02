@@ -1,9 +1,12 @@
-const Admin = require('../../models/admin');
 const Product = require('../../models/product');
 
-const getProductsByVerifyStatus = async (req, res, isVerify) => {
+const getProductsByVerifyStatus = async (req, res, query) => {
   try {
-    const products = await Product.find({ isVerify }).populate('owner');
+    const  {category} = req.query;
+    if (category) {
+     query.category = { $regex: new RegExp(category, 'i') };
+   }
+    const products = await Product.find(query).populate('owner');
     const newProducts = products.map(product => ({
       _id: product._id,
       owner: product.owner.username,
@@ -18,9 +21,9 @@ const getProductsByVerifyStatus = async (req, res, isVerify) => {
   }
 };
 
-const allverifiedProduct = async(req,res)=> getProductsByVerifyStatus(req,res,true);
+const allverifiedProduct = async(req,res)=> getProductsByVerifyStatus(req,res,{isVerify :true});
 
-const allunVerifiedProduct = async(req,res)=> getProductsByVerifyStatus(req,res,false);
+const allunVerifiedProduct = async(req,res)=> getProductsByVerifyStatus(req,res,{isVerify :false});
 
 const verifyProduct  =  async(req,res)=>{
     try {

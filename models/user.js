@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Product = require('./product');
 
 const userSchema = mongoose.Schema({
     username : {
@@ -23,6 +24,16 @@ const userSchema = mongoose.Schema({
         maxlength: [128, 'Password cannot exceed 128 characters.']
     },
 },{ timestamps: true });
+
+
+userSchema.pre('remove',async(next)=>{
+    try {
+        await Product.deleteMany({owner:this._id});
+        next();
+    } catch (error) {
+        next(error)
+    }
+})
 
 
 const User =  mongoose.model('User',userSchema);

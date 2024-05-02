@@ -20,5 +20,6 @@ router.get('/allownverifiedproduct',(req,res,next) => verifyToken(req,res,next,S
 router.get('/allownunverifiedproduct',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),getAllOwnUnverifiedProduct);
 router.get('/:id',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),getProduct);
 router.patch('/:id',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),updateProduct);
+router.patch
 
 module.exports = router;

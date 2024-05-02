@@ -1,52 +1,123 @@
 const Admin = require('../../models/admin');
+const Product = require('../../models/product');
 
+const getProductsByVerifyStatus = async (req, res, isVerify) => {
+  try {
+    const products = await Product.find({ isVerify }).populate('owner');
+    const newProducts = products.map(product => ({
+      _id: product._id,
+      owner: product.owner.username,
+      name: product.name,
+      category: product.category,
+      price: product.price,
+      stockQuantity: product.stockQuantity,
+    }));
+    res.status(200).json({ products: newProducts });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
 
-const allverifiedProduct = async(req,res)=>{
-     try {
-        console.log(req.id)
-        const admin = await Admin.findOne({_id : req.id});
-        res.json({admin})
-     } catch (error) {
-        console.log(error)
-     }
-}
+const allverifiedProduct = async(req,res)=> getProductsByVerifyStatus(req,res,true);
 
-const allunVerifiedProduct = async(req,res)=>{
+const allunVerifiedProduct = async(req,res)=> getProductsByVerifyStatus(req,res,false);
+
+const verifyProduct  =  async(req,res)=>{
     try {
-        res.send("get all unverified product")
+        const id = req.params.id;
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(400).json({ error: "Product doesn't exits" });
+        }
+        if(product.isVerify){
+            return res.status(400).json({Message: "Product Already Verified" });
+        }
+        await Product.findByIdAndUpdate(id,{isVerify : true},{ new: true });
+        res.status(200).json({message : "Product Verify Successfully"})
     } catch (error) {
-        console.log(error)
+        if (error.name === "CastError") {
+            return res.status(400).json({ error: "Invalid product ID" });
+          }
+          res.status(500).json({ error: "Internal Server Error" });
     }
 }
 
-const unverifiedProductToVerify =  async(req,res)=>{
+const deleteProduct  = async(req,res)=>{
     try {
-        res.send("product has verified");
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-const productToDelete = async(req,res)=>{
-    try {
-        res.send("product has removed")
-    } catch (error) {
-        console.log(error)
-    }
+        const id = req.params.id;
+        const product = await Product.findById(id);
+        if (!product) {
+          return res.status(400).json({ error: "Product doesn't exits" });
+        }
+        await Product.findOneAndDelete({_id :id});
+        res.status(200).json({ message: "Product removed successfully" });
+      } catch (error) {
+        if (error.name === "CastError") {
+          return res.status(400).json({ error: "Invalid product ID" });
+        }
+        res.status(500).json({ error: "Internal Server Error" });
+      }
 }
 
 const getProduct = async(req,res)=>{
     try {
-        res.send("get Product");
-    } catch (error) {
-        console.log(error);
+        const id = req.params.id;
+    
+        const product = await Product.findById(id).populate("owner");
+        if (!product) {
+          return res.status(400).json({ error: "Product doesn't exits" });
+        }
+        const newProduct = {
+          _id: product._id,
+          owner: product.owner.username,
+          name: product.name,
+          category: product.category,
+          description: product.description,
+          imageUrl: product.imageUrl,
+          price: product.price,
+          isVerify : product.isVerify,
+          stockQuantity: product.stockQuantity,
+        };
+        res.status(200).json({ product: newProduct });
+      } catch (error) {
+        if (error.name === "CastError") {
+          return res.status(400).json({ error: "Invalid product ID" });
+        }
+        res.status(500).json("Internal Server Error");
+      }
     }
+    
+const specifyUserProduct = async(req,res)=>{
+      try {
+        const id = req.params.user_id;
+        const products = await Product.find({owner : id}).populate('owner');
+        if(!products){
+           return res.status(200).json({message : "Products don't exit"});
+        }
+        const newProducts = products.map((product) => ({
+          _id: product._id,
+          owner: product.owner.username,
+          name: product.name,
+          category: product.category,
+          price: product.price,
+          stockQuantity: product.stockQuantity,
+          isVerify : product.isVerify
+        }));
+        res.status(200).json({newProducts});
+        
+      } catch (error) {
+        if (error.name === "CastError") {
+          return res.status(400).json({ error: "Invalid User ID" });
+        }
+        res.status(500).json("Internal Server Error");
+  }
 }
 
 module.exports = {
     allverifiedProduct,
     allunVerifiedProduct,
-    unverifiedProductToVerify,
-    productToDelete,
+    verifyProduct ,
+    deleteProduct ,
     getProduct,
+    specifyUserProduct
 }

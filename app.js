@@ -16,12 +16,6 @@ app.use('/admin',adminRoutes);
 app.use('/user',userRoutes);
 
 
-app.get('/',(req,res)=>{
-    res.send({
-      "user" :"sagar",   
-    })
-})
-
 app.listen(PORT,()=>{
     console.log("server is listening on port " + PORT);
 })

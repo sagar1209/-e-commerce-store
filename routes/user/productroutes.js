@@ -13,12 +13,6 @@ const SECRET_KEY = process.env.USER_JWT;
 
 const router = express.Router({ caseSensitive: true });
 
-router.get("/", (req, res) => {
-  res.send({
-    user: "productroutes",
-  });
-});
-
 router.get('/allproduct',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),getAllProduct);
 router.post('/',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),addProduct);
 router.delete('/:id',(req,res,next) => verifyToken(req,res,next,SECRET_KEY),removeProduct);

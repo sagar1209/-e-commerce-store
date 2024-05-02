@@ -1,23 +1,25 @@
-const User = require("../../models/user");
 const Product = require("../../models/product");
 const mongoose = require("mongoose");
 
-const getAllProduct = async (req, res) => {
+const getProductsWithQuery = async (req, res, query) => {
   try {
-    const products = await Product.find({ isVerify: true }).populate("owner");
-    const newProducts = products.map((product) => ({
+    const products = await Product.find(query).populate('owner');
+    const newProducts = products.map(product => ({
       _id: product._id,
       owner: product.owner.username,
       name: product.name,
       category: product.category,
       price: product.price,
       stockQuantity: product.stockQuantity,
+      isVerify: product.isVerify,
     }));
     res.status(200).json({ products: newProducts });
   } catch (error) {
-    res.status(500).json("Internal Server Error");
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+const getAllProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: true,owner :{$ne: req.id}})
 
 const addProduct = async (req, res) => {
   try {
@@ -54,8 +56,13 @@ const removeProduct = async (req, res) => {
         .json({ error: "You are not authorized to remove this product" });
     }
 
-    await Product.findOneAndDelete({ _id: id });
-    res.status(200).json({ message: "Product removed successfully" });
+    const deletedProduct = await Product.findOneAndDelete({ _id: id });
+
+    if (!deletedProduct) {
+      return res.status(400).json({ error: "Failed to delete product" });
+    }
+
+    res.status(200).json({ message: "Product removed successfully",product: deletedProduct });
   } catch (error) {
     if (error.name === "CastError") {
       return res.status(400).json({ error: "Invalid product ID" });
@@ -80,7 +87,7 @@ const updateProduct = async (req, res) => {
     }
     req.body.isVerify = false;
     const { owner, ...updateFields} = req.body;
-    await Product.findByIdAndUpdate(id, updateFields);
+    await Product.findByIdAndUpdate(id, updateFields,{new :true});
     res.status(200).json({ message: "Product Update successfully" });
   } catch (error) {
     if (error.name === "CastError") {
@@ -90,37 +97,9 @@ const updateProduct = async (req, res) => {
   }
 };
 
-const getAllOwnVerifiedProduct = async (req, res) => {
-  try {
-    const products = await Product.find({ isVerify: true, owner: req.id });
-    const newProducts = products.map((product) => ({
-      _id: product._id,
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      stockQuantity: product.stockQuantity,
-    }));
-    res.status(200).json({ products: newProducts });
-  } catch (error) {
-    res.status(500).json("Internal Server Error");
-  }
-};
+const getAllOwnVerifiedProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: true, owner: req.id});
 
-const getAllOwnUnverifiedProduct = async (req, res) => {
-  try {
-    const products = await Product.find({ isVerify: false, owner: req.id });
-    const newProducts = products.map((product) => ({
-      _id: product._id,
-      name: product.name,
-      category: product.category,
-      price: product.price,
-      stockQuantity: product.stockQuantity,
-    }));
-    res.status(200).json({ products: newProducts });
-  } catch (error) {
-    res.status(500).json("Internal Server Error");
-  }
-};
+const getAllOwnUnverifiedProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: false, owner: req.id});
 
 const getProduct = async (req, res) => {
   try {

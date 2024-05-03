@@ -14,7 +14,7 @@ const likeSchema = new mongoose.Schema({
     likedAt: {
         type: Date,
         default: Date.now
-    }
+    },
 });
 
 

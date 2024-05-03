@@ -11,6 +11,8 @@ const addComment = async(req,res)=>{
         req.body.product = req.params.id;
         const comment = new Comment(req.body);
         await comment.save();
+        product.comments.push(comment._id);
+        await product.save();
         res.status(200).json({
             createdAt : comment.commentAt,
             message :  "Comment added",

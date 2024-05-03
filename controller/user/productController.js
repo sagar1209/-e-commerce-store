@@ -4,32 +4,37 @@ const mongoose = require("mongoose");
 const getProductsWithQuery = async (req, res, query) => {
   try {
     // search functionality add
-     const  {category} = req.query;
-     if (category) {
-      query.category = { $regex: new RegExp(category, 'i') };
+    const { category } = req.query;
+    if (category) {
+      query.category = { $regex: new RegExp(category, "i") };
     }
-    const products = await Product.find(query).populate('owner');
-    const newProducts = products.map(product => ({
-      _id : product._id,
+    const products = await Product.find(query).populate("owner");
+    console.log(products);
+    const newProducts = products.map((product) => ({
+      _id: product._id,
       owner: product.owner.username,
       name: product.name,
       category: product.category,
       price: product.price,
       stockQuantity: product.stockQuantity,
       isVerify: product.isVerify,
+      totalLikes: product.likes.length,
+      totalComments: product.comments.length,
     }));
     res.status(200).json({ products: newProducts });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
-const getAllProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: true,owner :{$ne: req.id}})
+const getAllProduct = async (req, res) =>
+  getProductsWithQuery(req, res, { isVerify: true, owner: { $ne: req.id } });
 
-const getAllOwnVerifiedProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: true, owner: req.id});
+const getAllOwnVerifiedProduct = async (req, res) =>
+  getProductsWithQuery(req, res, { isVerify: true, owner: req.id });
 
-const getAllOwnUnverifiedProduct = async (req, res) => getProductsWithQuery(req,res,{ isVerify: false, owner: req.id});
-
+const getAllOwnUnverifiedProduct = async (req, res) =>
+  getProductsWithQuery(req, res, { isVerify: false, owner: req.id }); 
 
 const addProduct = async (req, res) => {
   try {
@@ -72,7 +77,10 @@ const removeProduct = async (req, res) => {
       return res.status(400).json({ error: "Failed to delete product" });
     }
 
-    res.status(200).json({ message: "Product removed successfully",product: deletedProduct });
+    res.status(200).json({
+      message: "Product removed successfully",
+      product: deletedProduct,
+    });
   } catch (error) {
     if (error.name === "CastError") {
       return res.status(400).json({ error: "Invalid product ID" });
@@ -96,8 +104,8 @@ const updateProduct = async (req, res) => {
         .json({ error: "You are not authorized to update this product" });
     }
     req.body.isVerify = false;
-    const { owner, ...updateFields} = req.body;
-    await Product.findByIdAndUpdate(id, updateFields,{new :true});
+    const { owner, ...updateFields } = req.body;
+    await Product.findByIdAndUpdate(id, updateFields, { new: true });
     res.status(200).json({ message: "Product Update successfully" });
   } catch (error) {
     if (error.name === "CastError") {
@@ -111,7 +119,22 @@ const getProduct = async (req, res) => {
   try {
     const id = req.params.id;
 
-    const product = await Product.findById(id).populate("owner");
+    const product = await Product.findById(id)
+      .populate("owner")
+      .populate({
+        path: "likes",
+        populate: {
+          path: "user",
+          model: "User",
+        },
+      })
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user",
+          model: "User",
+        },
+      });
     if (!product) {
       return res.status(400).json({ error: "Product doesn't exits" });
     }
@@ -124,11 +147,24 @@ const getProduct = async (req, res) => {
       imageUrl: product.imageUrl,
       price: product.price,
       stockQuantity: product.stockQuantity,
+      isVerify: product.isVerify,
+      likes: product.likes.map((like) => {
+        return {
+          username: like.user.username,
+          createdAt : like.likedAt,
+        };
+      }),
+      comments: product.comments.map((comment) => {
+        return {
+          username: comment.user.username,
+          content: comment.content,
+          createdAt : comment.commentAt,
+        };
+      }),
     };
     const userID = product.owner._id.toString();
     if (userID === req.id) {
       newProduct.isOwner = true;
-      newProduct.isVerify = product.isVerify;
     } else newProduct.isOwner = false;
     res.status(200).json({ product: newProduct });
   } catch (error) {

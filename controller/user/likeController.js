@@ -1,8 +1,9 @@
 const Like = require('../../models/like')
+const Product = require('../../models/product')
 
 const likeOrUnlike = async (req, res) => {
     try {
-        const product = await Product.findById(id);
+        const product = await Product.findById(req.params.id);
         if (!product) {
             return res.status(400).json({ error: "Product doesn't exits" });
         }
@@ -13,11 +14,19 @@ const likeOrUnlike = async (req, res) => {
         if (!likeProduct) {
             const newLikeProduct = new Like({ product: productId, user: userId });
             await newLikeProduct.save();
+            product.likes.push(newLikeProduct._id);
+            await product.save();
             return res.status(200).json({
                 message: "Product liked",
                 isLike: true
             });
         } else {
+            console.log(product);
+           // Assuming likeProduct._id is the ID of the like you want to remove
+            product.likes = product.likes.filter(likeId => likeId.toString() !== likeProduct._id.toString());
+            await product.save();
+ 
+            await product.save();
             return res.status(200).json({
                 message: "Product unliked",
                 isLike: false

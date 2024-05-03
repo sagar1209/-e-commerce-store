@@ -26,14 +26,15 @@ const userSchema = mongoose.Schema({
 },{ timestamps: true });
 
 
-userSchema.pre('remove',async(next)=>{
+userSchema.pre('deleteOne', async function(next) {
     try {
-        await Product.deleteMany({owner:this._id});
+        await Product.deleteMany({ owner:this.getQuery()._id});
         next();
     } catch (error) {
-        next(error)
+        console.log(error)
+        next(error);
     }
-})
+});
 
 
 const User =  mongoose.model('User',userSchema);

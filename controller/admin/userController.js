@@ -1,5 +1,6 @@
 const User = require('../../models/user');
 const Product = require('../../models/product')
+const {expireToken} = require('../../config/auth')
 
 
 const allUser = async (req, res) => {
@@ -35,24 +36,26 @@ const allUser = async (req, res) => {
     }
 };
 
-
-const removeUser =  async (req,res)=>{
+const removeUser = async (req, res) => {
     try {
         const id = req.params.id;
         const user = await User.findById(id);
-        if(!user){
-            return res.status(400).json({error : "user doesn't exit"});
+        if (!user) {
+            return res.status(400).json({ error: "User doesn't exist" });
         }
-        const deletedUser =  await User.findOneAndDelete({_id:id});
-        res.status(200).json({message : "User Deleted Successfully",user : deletedUser});
-
+        await user.deleteOne();
+        await expireToken(req, res, () => {
+            res.status(200).json({ message: "User Deleted Successfully" });
+        });
     } catch (error) {
         if (error.name === "CastError") {
-            return res.status(400).json({ error: "Invalid product ID" });
-          }
-          res.status(500).json("Internal Server Error");
+            return res.status(400).json({ error: "Invalid user ID" }); // Changed from "Invalid product ID"
+        }
+        console.log(error)
+        res.status(500).json("Internal Server Error");
     }
 }
+
 
 module.exports = {
     allUser,

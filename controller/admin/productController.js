@@ -8,7 +8,6 @@ const getProductsByVerifyStatus = async (req, res, query) => {
     }
 
     const products = await Product.find(query).populate('owner');
-    console.log(products)
     const newProducts = products.map(product => ({
       _id: product._id,
       owner: product.owner.username,
@@ -16,6 +15,8 @@ const getProductsByVerifyStatus = async (req, res, query) => {
       category: product.category,
       price: product.price,
       stockQuantity: product.stockQuantity,
+      totalLikes: product.likes.length,
+      totalComments: product.comments.length,
     }));
     res.status(200).json({ products: newProducts });
   } catch (error) {
@@ -68,7 +69,22 @@ const getProduct = async(req,res)=>{
     try {
         const id = req.params.id;
     
-        const product = await Product.findById(id).populate("owner");
+        const product = await Product.findById(id)
+        .populate("owner")
+        .populate({
+          path: "likes",
+          populate: {
+            path: "user",
+            model: "User",
+          },
+        })
+        .populate({
+          path: "comments",
+          populate: {
+            path: "user",
+            model: "User",
+          },
+        });
         if (!product) {
           return res.status(400).json({ error: "Product doesn't exits" });
         }
@@ -82,6 +98,19 @@ const getProduct = async(req,res)=>{
           price: product.price,
           isVerify : product.isVerify,
           stockQuantity: product.stockQuantity,
+          likes: product.likes.map((like) => {
+            return {
+              username: like.user.username,
+              createdAt : like.likedAt,
+            };
+          }),
+          comments: product.comments.map((comment) => {
+            return {
+              username: comment.user.username,
+              content: comment.content,
+              createdAt : comment.commentAt,
+            };
+          }),
         };
         res.status(200).json({ product: newProduct });
       } catch (error) {

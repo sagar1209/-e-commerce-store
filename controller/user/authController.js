@@ -42,7 +42,6 @@ const login = async (req, res) => {
     if (!user) throw new Error("email address not found");
 
     const match = await verifyPassword(password, user.password);
-    console.log(match);
     if (!match) {
       throw new Error("Incorrect password");
     }

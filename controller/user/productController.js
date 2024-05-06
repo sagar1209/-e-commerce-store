@@ -9,7 +9,6 @@ const getProductsWithQuery = async (req, res, query) => {
       query.category = { $regex: new RegExp(category, "i") };
     }
     const products = await Product.find(query).populate("owner");
-    console.log(products);
     const newProducts = products.map((product) => ({
       _id: product._id,
       owner: product.owner.username,

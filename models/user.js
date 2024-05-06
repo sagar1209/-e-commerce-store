@@ -28,6 +28,7 @@ const userSchema = mongoose.Schema({
 
 userSchema.pre('deleteOne', async function(next) {
     try {
+        
         await Product.deleteMany({ owner:this.getQuery()._id});
         next();
     } catch (error) {
@@ -35,6 +36,37 @@ userSchema.pre('deleteOne', async function(next) {
         next(error);
     }
 });
+
+// userSchema.pre('deleteOne', asfync function(next) {
+//     try {
+//         const userId = this.getQuery()._id;
+//         const products = await Product.find({ owner: userId });
+//         // Find all products owned by the user
+//         for (const product of products) {
+//             await Like.deleteMany({ product: product._id });
+
+//             await Comment.deleteMany({ product: product._id });
+//         }
+//         // Remove references to likes from other products
+//         await Product.updateMany(
+//             { likes: { $elemMatch: { user: userId } } },
+//             { $pull: { likes: { user: userId } } }
+//         );
+//         // Remove references to comments from other products
+//         await Product.updateMany(
+//             { comments: { $elemMatch: { user: userId } } },
+//             { $pull: { comments: { user: userId } } }
+//         );
+//         // Delete likes associated with the user
+//         await Like.deleteMany({ user: userId });
+//         // Delete comments associated with the user
+//         await Comment.deleteMany({ user: userId });
+//         next();
+//     } catch (error) {
+//         console.log(error);
+//         next(error);
+//     }
+// });
 
 
 const User =  mongoose.model('User',userSchema);
